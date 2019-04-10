@@ -29,7 +29,7 @@ class Worker(object):
         return [end - start]
 
     def run_onenetlogin(self):
-        url = "https://grpal-wias125.vf-gr.internal.vodafone.com/vop/ListTextOneLogin.php"
+        url = self.script['url']
         urllib_result = urllib.request.urlopen(url, timeout=self.timeout).read()
         soup = BeautifulSoup(urllib_result, 'html.parser')
         latestvalue = soup.find_all('table')[2].find_all('tr')[1].find_all('td')[3].get_text()
@@ -137,7 +137,7 @@ class MetricCollector(object):
                 print(script['name'], results)
                 for num, result in enumerate(results):
                     self.metric_samples.append({
-                        'name': 'ssh_' + script['name'],
+                        'name': 'worker_' + script['name'],
                         'result': result,
                         'num': str(num)
                     })
@@ -150,7 +150,7 @@ class MetricCollector(object):
 
 
 runforever = True
-config_file = "ssh_settings.yml"
+config_file = "settings.yml"
 if len(sys.argv) > 1:
     config_file = sys.argv[1]
 

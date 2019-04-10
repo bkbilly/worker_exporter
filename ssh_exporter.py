@@ -54,6 +54,7 @@ class SSHConnection(object):
         results = []
         for result in stdout.split('|'):
             results.append(int(result))
+        self.ssh.close()
         return results
 
     def run_mysql(self):
@@ -63,6 +64,7 @@ class SSHConnection(object):
         results = []
         for row in stdout.split('\n')[:-1]:
             results.append(int(row))
+        self.ssh.close()
         return results
 
 
@@ -74,7 +76,7 @@ class MetricCollector(object):
     def collect(self):
         self.settings = get_settings()
         # Fetch the JSON
-        print('---------------')
+        print('-----START-----')
         self.metric_samples = []
         threads = []
         flag = 1
@@ -82,7 +84,6 @@ class MetricCollector(object):
             t = threading.Thread(target=self.ssh_result, args=(script,))
             threads.append(t)
             t.start()
-            time.sleep(0.1)
         while (flag):
             time.sleep(0.5)
             flag = 0
@@ -93,6 +94,7 @@ class MetricCollector(object):
         metric = Metric('ssh_exporter', 'SSH Exporter by bkbilly', 'summary')
         for metric_sample in self.metric_samples:
             metric.add_sample(metric_sample['name'], value=metric_sample['result'], labels={'num': metric_sample['num']})
+        print('-----END-----')
 
         yield metric
 

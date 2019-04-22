@@ -16,7 +16,10 @@ from zeep import Client
 class Worker(object):
     def __init__(self, script):
         self.script = script
-        self.timeout = 2
+        if hasattr(self.script, 'timeout'):
+            self.timeout = int(self.script['timeout'])
+        else:
+            self.timeout = 2
 
     def soap_timed_result(self):
         start = time.time()
@@ -57,6 +60,14 @@ class Worker(object):
         ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         ssh.connect(ssh_host, ssh_port, username=ssh_user, password=ssh_pass, key_filename=ssh_keyfile)
         return ssh
+
+    def ssh_timed_result(self):
+        start = time.time()
+        ssh = self._get_ssh()
+        stdin, stdout, stderr = ssh.exec_command(self.script['cmd'], timeout=self.timeout)
+        ssh.close()
+        end = time.time()
+        return [end - start]
 
     def run_shell(self):
         ssh = self._get_ssh()
